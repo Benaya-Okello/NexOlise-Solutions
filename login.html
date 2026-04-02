@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NexOlise HotSpot — Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #05080f;
+  --bg2: #080d1a;
+  --surface: #0c1220;
+  --card: #0f1825;
+  --border: #162035;
+  --border2: #1e2f4a;
+  --accent: #00e5b8;
+  --accent-dim: rgba(0,229,184,0.12);
+  --accent-glow: rgba(0,229,184,0.25);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --text: #eef2f8;
+  --text2: #8ba0be;
+  --text3: #4a6080;
+  --success: #22d97a;
+  --warning: #fbbf24;
+  --danger: #f05252;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Background mesh ─────────────────────────────────── */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-mesh::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(ellipse, rgba(0,229,184,0.06) 0%, transparent 65%);
+  animation: drift1 12s ease-in-out infinite alternate;
+}
+.bg-mesh::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: -5%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.06) 0%, transparent 65%);
+  animation: drift2 15s ease-in-out infinite alternate;
+}
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(22,32,53,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22,32,53,0.5) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 100%);
+}
+
+@keyframes drift1 { to { transform: translate(5%, 8%) scale(1.1); } }
+@keyframes drift2 { to { transform: translate(-6%, -5%) scale(1.15); } }
+
+/* ── Layout ──────────────────────────────────────────── */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ── Logo ────────────────────────────────────────────── */
+.logo {
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: fadeSlideDown 0.5s ease both;
+}
+.logo-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, rgba(0,229,184,0.15), rgba(59,130,246,0.1));
+  border: 1px solid rgba(0,229,184,0.2);
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.logo-icon-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,229,184,0.08), transparent);
+}
+.logo-icon-wrap svg {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  z-index: 1;
+}
+.logo-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.logo-name span { color: var(--accent); }
+.logo-tag {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-top: 0.4rem;
+}
+
+/* ── Card ────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  overflow: hidden;
+  animation: fadeSlideUp 0.5s ease 0.1s both;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.card-inner { padding: 1.75rem; }
+
+/* ── Step indicators ─────────────────────────────────── */
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.5rem;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+}
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text3);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+.step-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  transition: color 0.3s ease;
+}
+.step-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+  margin: 0 0.5rem;
+  transition: background 0.3s ease;
+}
+.step.active .step-num {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.step.active .step-label { color: var(--accent); }
+.step.done .step-num {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #05080f;
+}
+.step.done .step-label { color: var(--text2); }
+.step-line.done { background: var(--accent); }
+
+/* ── Section label ───────────────────────────────────── */
+.sec-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 0.9rem;
+}
+
+/* ── Package grid ────────────────────────────────────── */
+.pkg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+}
+.pkg-card {
+  position: relative;
+  background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 1rem 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, background 0.2s;
+  overflow: hidden;
+  text-align: center;
+  user-select: none;
+}
+.pkg-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,229,184,0.04), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.pkg-card:hover { border-color: rgba(0,229,184,0.3); transform: translateY(-1px); }
+.pkg-card:hover::before { opacity: 1; }
+.pkg-card.sel {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(0,229,184,0.08), rgba(59,130,246,0.04));
+}
+.pkg-card.sel::before { opacity: 1; }
+.pkg-card.wide {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 1.1rem 1.25rem;
+}
+.pkg-badge {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  background: var(--accent);
+  color: #05080f;
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 0 var(--radius) 0 var(--radius-sm);
+}
+.pkg-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.pkg-card.wide .pkg-name { font-size: 1.15rem; }
+.pkg-dur {
+  font-size: 0.68rem;
+  color: var(--text3);
+  margin-top: 3px;
+  font-weight: 400;
+}
+.pkg-price {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-top: 0.5rem;
+}
+.pkg-card.wide .pkg-price { margin-top: 0; font-size: 1.3rem; }
+.pkg-speed {
+  font-size: 0.62rem;
+  color: var(--text3);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pkg-speed::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* ── Divider ─────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.5rem 0;
+}
+
+/* ── Input ───────────────────────────────────────────── */
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block;
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.3px;
+}
+.input-box {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+.input-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.input-prefix {
+  padding: 0 0.9rem;
+  font-size: 0.88rem;
+  color: var(--text3);
+  border-right: 1px solid var(--border2);
+  height: 50px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.02);
+  font-family: 'JetBrains Mono', monospace;
+}
+.input-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  padding: 0 1rem;
+  height: 50px;
+  letter-spacing: 1px;
+}
+.input-box input::placeholder { color: var(--text3); letter-spacing: 0px; font-size: 0.88rem; }
+
+/* ── Summary ─────────────────────────────────────────── */
+.summary {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.25rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.summary.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text3);
+  padding: 0.3rem 0;
+}
+.sum-row:last-child {
+  padding-top: 0.6rem;
+  margin-top: 0.4rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.sum-row span:last-child { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+
+/* ── CTA Button ──────────────────────────────────────── */
+.btn-pay {
+  width: 100%;
+  height: 54px;
+  background: linear-gradient(135deg, var(--accent), #00bcd4);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #05080f;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+.btn-pay::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transition: left 0.4s;
+}
+.btn-pay:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-glow); }
+.btn-pay:hover::after { left: 100%; }
+.btn-pay:active { transform: translateY(0); }
+.btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+.btn-pay svg { width: 18px; height: 18px; flex-shrink: 0; }
+.spin {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(5,8,15,0.25);
+  border-top-color: #05080f;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.btn-pay.loading .btn-text { display: none; }
+.btn-pay.loading .spin { display: block; }
+
+/* ── Status messages ─────────────────────────────────── */
+.msg {
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.83rem;
+  line-height: 1.5;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.msg.show { display: block; }
+.msg-wait { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); color: #7ab8f5; }
+.msg-ok   { background: rgba(34,217,122,0.1); border: 1px solid rgba(34,217,122,0.2); color: var(--success); }
+.msg-err  { background: rgba(240,82,82,0.1); border: 1px solid rgba(240,82,82,0.2); color: #fc8181; }
+
+/* Pulse animation for waiting state */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7ab8f5;
+  animation: pulseDot 1.4s ease-in-out infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+@keyframes pulseDot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── Progress bar ────────────────────────────────────── */
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  display: none;
+}
+.progress-bar.show { display: block; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+  border-radius: 2px;
+  width: 0%;
+  transition: width 5s linear;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.7rem;
+  color: var(--text3);
+  animation: fadeIn 0.6s ease 0.4s both;
+}
+.footer strong { color: var(--accent); }
+
+/* ── Wifi signal icon animation ──────────────────────── */
+.wifi-bars { display: flex; align-items: flex-end; gap: 3px; height: 20px; }
+.wifi-bar {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.wifi-bar:nth-child(1) { height: 6px; animation: wifiPulse 1.2s ease-in-out infinite; }
+.wifi-bar:nth-child(2) { height: 11px; animation: wifiPulse 1.2s ease-in-out 0.15s infinite; }
+.wifi-bar:nth-child(3) { height: 16px; animation: wifiPulse 1.2s ease-in-out 0.3s infinite; }
+.wifi-bar:nth-child(4) { height: 20px; animation: wifiPulse 1.2s ease-in-out 0.45s infinite; }
+@keyframes wifiPulse {
+  0%,100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Mobile tweaks ───────────────────────────────────── */
+@media (max-width: 400px) {
+  .pkg-name { font-size: 0.95rem; }
+  .card-inner { padding: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+
+<div class="page">
+  <div class="wrap">
+
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.5 8.5C5.5 4.5 10.5 2.5 12 2.5s6.5 2 10.5 6" stroke="#00e5b8" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M4.5 11.5c2-2 4.5-3.5 7.5-3.5s5.5 1.5 7.5 3.5" stroke="#00e5b8" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M7.5 14.5C8.8 13.2 10.3 12.5 12 12.5s3.2.7 4.5 2" stroke="#00e5b8" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="12" cy="18.5" r="1.5" fill="#00e5b8"/>
+        </svg>
+      </div>
+      <div class="logo-name">Nex<span>Olise</span></div>
+      <div class="logo-tag">HotSpot · Powered by M-Pesa</div>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+      <!-- Card top accent strip -->
+      <div style="height:2px;background:linear-gradient(90deg,var(--accent),var(--blue),transparent)"></div>
+
+      <div class="card-inner">
+
+        <!-- Steps -->
+        <div class="steps">
+          <div class="step active" id="step1">
+            <div class="step-num">1</div>
+            <div class="step-label">Package</div>
+          </div>
+          <div class="step-line" id="line1"></div>
+          <div class="step" id="step2">
+            <div class="step-num">2</div>
+            <div class="step-label">Phone</div>
+          </div>
+          <div class="step-line" id="line2"></div>
+          <div class="step" id="step3">
+            <div class="step-num">3</div>
+            <div class="step-label">Pay</div>
+          </div>
+        </div>
+
+        <!-- Packages -->
+        <div class="sec-label">Choose Your Plan</div>
+        <div class="pkg-grid" id="pkgGrid">
+          <!-- Loaded from API or fallback below -->
+          <div class="pkg-card" data-id="1" data-name="1 Hour" data-price="10" data-dur="1 Hour" onclick="selectPkg(this)">
+            <div class="pkg-name">1 HR</div>
+            <div class="pkg-dur">60 minutes</div>
+            <div class="pkg-price">KES 10</div>
+            <div class="pkg-speed">Unlimited</div>
+          </div>
+          <div class="pkg-card" data-id="2" data-name="3 Hours" data-price="20" data-dur="3 Hours" onclick="selectPkg(this)">
+            <div class="pkg-name">3 HRS</div>
+            <div class="pkg-dur">180 minutes</div>
+            <div class="pkg-price">KES 20</div>
+            <div class="pkg-speed">Unlimited</div>
+          </div>
+          <div class="pkg-card wide" data-id="3" data-name="Daily Pass" data-price="50" data-dur="24 Hours" onclick="selectPkg(this)">
+            <span class="pkg-badge">⚡ Popular</span>
+            <div>
+              <div class="pkg-name">Daily Pass</div>
+              <div class="pkg-dur">24 Hours · Full Day</div>
+              <div class="pkg-speed">Unlimited Speed</div>
+            </div>
+            <div class="pkg-price">KES 50</div>
+          </div>
+          <div class="pkg-card" data-id="4" data-name="Weekly" data-price="200" data-dur="7 Days" onclick="selectPkg(this)">
+            <div class="pkg-name">WEEKLY</div>
+            <div class="pkg-dur">7 days</div>
+            <div class="pkg-price">KES 200</div>
+            <div class="pkg-speed">Unlimited</div>
+          </div>
+          <div class="pkg-card" data-id="5" data-name="Monthly" data-price="500" data-dur="30 Days" onclick="selectPkg(this)">
+            <div class="pkg-name">MONTHLY</div>
+            <div class="pkg-dur">30 days</div>
+            <div class="pkg-price">KES 500</div>
+            <div class="pkg-speed">Unlimited</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Phone input -->
+        <div class="sec-label">M-Pesa Number</div>
+        <div class="field">
+          <label>Your Safaricom number</label>
+          <div class="input-box">
+            <div class="input-prefix">🇰🇪 +254</div>
+            <input
+              type="tel"
+              id="phoneInput"
+              placeholder="7XX XXX XXX"
+              maxlength="9"
+              inputmode="numeric"
+              oninput="onPhoneInput(this)"
+            >
+          </div>
+        </div>
+
+        <!-- Order summary -->
+        <div class="summary" id="summary">
+          <div class="sum-row"><span>Plan</span><span id="sumPkg">—</span></div>
+          <div class="sum-row"><span>Duration</span><span id="sumDur">—</span></div>
+          <div class="sum-row"><span>Speed</span><span>Unlimited</span></div>
+          <div class="sum-row">
+            <span>Total to pay</span>
+            <span id="sumPrice">KES 0</span>
+          </div>
+        </div>
+
+        <!-- Pay button -->
+        <button class="btn-pay" id="payBtn" onclick="pay()">
+          <span class="btn-text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            Pay with M-Pesa
+          </span>
+          <div class="spin"></div>
+        </button>
+
+        <!-- Messages -->
+        <div class="msg msg-wait" id="msgWait">
+          <span class="pulse-dot"></span>
+          <strong>STK Push sent!</strong> Check your phone for the M-Pesa prompt and enter your PIN to complete.
+          <div class="progress-bar show" id="progBar"><div class="progress-fill" id="progFill"></div></div>
+        </div>
+        <div class="msg msg-ok" id="msgOk">
+          ✅ <strong>Payment confirmed!</strong> Setting up your connection…
+        </div>
+        <div class="msg msg-err" id="msgErr"></div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px">
+        <div class="wifi-bars">
+          <div class="wifi-bar"></div>
+          <div class="wifi-bar"></div>
+          <div class="wifi-bar"></div>
+          <div class="wifi-bar"></div>
+        </div>
+        <span>Secure M-Pesa · <strong>NexOlise</strong></span>
+      </div>
+      Fast, local ISP support · Eldoret, Kenya
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG — update this after Railway deployment ─────────────
+const BACKEND_URL = 'https://YOUR-RAILWAY-APP.railway.app';
+
+// MikroTik injects these at runtime
+const MAC  = '$(mac)';
+const IP   = '$(ip)';
+const LINK = '$(link-orig)';
+
+// ── State ─────────────────────────────────────────────────────
+let selected = null;
+
+// ── Load packages from backend (falls back to static HTML) ───
+async function loadPackages() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/pay/packages`);
+    if (!res.ok) return;
+    const pkgs = await res.json();
+    if (!pkgs.length) return;
+
+    const grid = document.getElementById('pkgGrid');
+    grid.innerHTML = '';
+
+    pkgs.forEach((p, i) => {
+      const isPopular = (p.price === 50 || i === 2);
+      const isWide    = isPopular;
+      const dur       = formatDuration(p.duration_minutes);
+
+      const el = document.createElement('div');
+      el.className = 'pkg-card' + (isWide ? ' wide' : '');
+      el.dataset.id    = p.id;
+      el.dataset.name  = p.name;
+      el.dataset.price = p.price;
+      el.dataset.dur   = dur;
+      el.onclick = () => selectPkg(el);
+
+      if (isWide) {
+        el.innerHTML = `
+          ${isPopular ? '<span class="pkg-badge">⚡ Popular</span>' : ''}
+          <div>
+            <div class="pkg-name">${p.name.toUpperCase()}</div>
+            <div class="pkg-dur">${dur} · Full access</div>
+            <div class="pkg-speed">Unlimited speed</div>
+          </div>
+          <div class="pkg-price">KES ${p.price}</div>
+        `;
+      } else {
+        const shortName = p.name.replace(' Hours','HRS').replace(' Hour','HR').toUpperCase();
+        el.innerHTML = `
+          ${isPopular ? '<span class="pkg-badge">⚡</span>' : ''}
+          <div class="pkg-name">${shortName}</div>
+          <div class="pkg-dur">${dur}</div>
+          <div class="pkg-price">KES ${p.price}</div>
+          <div class="pkg-speed">Unlimited</div>
+        `;
+      }
+      grid.appendChild(el);
+    });
+  } catch (e) {
+    // Use static HTML fallback
+  }
+}
+
+function formatDuration(mins) {
+  if (mins < 60)    return `${mins} min`;
+  if (mins < 1440)  return `${Math.round(mins/60)} Hour${mins/60>1?'s':''}`;
+  if (mins < 10080) return `${Math.round(mins/1440)} Day${mins/1440>1?'s':''}`;
+  return `${Math.round(mins/10080)} Week${mins/10080>1?'s':''}`;
+}
+
+// ── Package selection ─────────────────────────────────────────
+function selectPkg(el) {
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  selected = {
+    id:    el.dataset.id,
+    name:  el.dataset.name,
+    price: el.dataset.price,
+    dur:   el.dataset.dur,
+  };
+  document.getElementById('sumPkg').textContent   = selected.name;
+  document.getElementById('sumDur').textContent   = selected.dur;
+  document.getElementById('sumPrice').textContent = `KES ${selected.price}`;
+  document.getElementById('summary').classList.add('show');
+  updateSteps();
+}
+
+// ── Phone input handler ───────────────────────────────────────
+function onPhoneInput(el) {
+  el.value = el.value.replace(/\D/g, '');
+  updateSteps();
+}
+
+// ── Update step indicators ────────────────────────────────────
+function updateSteps() {
+  const phone  = document.getElementById('phoneInput').value;
+  const hasNum = phone.length >= 9;
+
+  setStep('step1', selected ? 'done' : 'active');
+  document.getElementById('line1').classList.toggle('done', !!selected);
+  setStep('step2', !selected ? '' : hasNum ? 'done' : 'active');
+  document.getElementById('line2').classList.toggle('done', hasNum && !!selected);
+  setStep('step3', hasNum && selected ? 'active' : '');
+}
+
+function setStep(id, state) {
+  const el = document.getElementById(id);
+  el.classList.remove('active','done');
+  if (state) el.classList.add(state);
+}
+
+// ── Pay ───────────────────────────────────────────────────────
+async function pay() {
+  const raw = document.getElementById('phoneInput').value.trim();
+
+  if (!selected) return showMsg('err', '⚠️ Please select a package first.');
+  if (raw.length < 9) return showMsg('err', '⚠️ Please enter a valid 9-digit phone number.');
+
+  const phone = '254' + raw.replace(/^0/, '');
+
+  const btn = document.getElementById('payBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  clearMsgs();
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/pay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, packageId: selected.id, mac: MAC, ip: IP })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to initiate payment');
+
+    showMsg('wait');
+    startProgress();
+    pollStatus(data.checkoutId, phone);
+
+  } catch (err) {
+    showMsg('err', '❌ ' + err.message);
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+// ── Poll payment status ───────────────────────────────────────
+function pollStatus(checkoutId, phone) {
+  let attempts = 0;
+  const max = 24; // 2 minutes (every 5s)
+
+  const iv = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/pay/status/${checkoutId}`);
+      const d   = await res.json();
+
+      if (d.status === 'completed') {
+        clearInterval(iv);
+        showMsg('ok');
+        setTimeout(() => {
+          // MikroTik login redirect — uses injected variables
+          window.location.href =
+            `$(link-login-only)?username=${phone}&password=${d.password}&dst=$(link-orig)`;
+        }, 2000);
+        return;
+      }
+
+      if (d.status === 'failed') {
+        clearInterval(iv);
+        showMsg('err', '❌ Payment failed or was cancelled. Please try again.');
+        resetBtn();
+        return;
+      }
+
+    } catch(e) { /* keep polling */ }
+
+    if (attempts >= max) {
+      clearInterval(iv);
+      showMsg('err', '⏱️ Timed out. If you completed payment, reconnect and try again.');
+      resetBtn();
+    }
+  }, 5000);
+}
+
+// ── Progress bar animation ────────────────────────────────────
+function startProgress() {
+  const fill = document.getElementById('progFill');
+  fill.style.width = '0%';
+  // Animate to ~90% over 2 min
+  setTimeout(() => { fill.style.transitionDuration = '110s'; fill.style.width = '90%'; }, 100);
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function clearMsgs() {
+  ['msgWait','msgOk','msgErr'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+    el.textContent = '';
+  });
+}
+
+function showMsg(type, text) {
+  clearMsgs();
+  if (type === 'wait') {
+    document.getElementById('msgWait').innerHTML = `
+      <span class="pulse-dot"></span>
+      <strong>STK Push sent!</strong> Check your phone and enter your M-Pesa PIN.
+      <div class="progress-bar show" id="progBar"><div class="progress-fill" id="progFill"></div></div>
+    `;
+    document.getElementById('msgWait').classList.add('show');
+    startProgress();
+  } else if (type === 'ok') {
+    document.getElementById('msgOk').textContent = '✅ Payment confirmed! Connecting you…';
+    document.getElementById('msgOk').classList.add('show');
+  } else {
+    const el = document.getElementById('msgErr');
+    el.textContent = text;
+    el.classList.add('show');
+  }
+}
+
+function resetBtn() {
+  const btn = document.getElementById('payBtn');
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+// ── Init ──────────────────────────────────────────────────────
+loadPackages();
+</script>
+</body>
+</html>
